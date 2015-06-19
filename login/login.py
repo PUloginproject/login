@@ -184,7 +184,7 @@ class LoginXBlock(XBlock):
                     elif self.mailExist_result == None and self.autoLogChecked:
                         return {'create_result': mailExist,
                                 'autoLogin_result':
-                                    'Sorry, you don\'t have the account in ProctorU',
+                                    'Sorry, you don\'t have an account with ProctorU',
                                 'autoLogin_url': ''}
 
                     # create the account
@@ -278,7 +278,7 @@ class LoginXBlock(XBlock):
                                             if self.autoLogin_result == 1:
                                                 return {'create_result':
                                                             'Success to create the account and Success to log in ProctorU'
-                                                            + ' You can visit the ProctorU:',
+                                                            + ' You can visit ProctorU by clicking:',
                                                         'autoLogin_result': '',
                                                         'autoLogin_url': self.autoLogin_url}
                                             else:
