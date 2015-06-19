@@ -1,0 +1,9 @@
+/* CSS for LoginXBlock */
+
+.login_block .count {
+    font-weight: bold;
+}
+
+.login_block p {
+    cursor: pointer;
+}
