@@ -1,5 +1,9 @@
 /* Javascript for LoginXBlock. */
 function LoginXBlock(runtime, element) {
+    Create_result.text("");
+    AutoLogin_result.text("");
+    AutoLogin_url.text("");
+
     $('#submit', element).bind('click', function () {
         var Student_id = $('#email').val();
         var Lastname = $('#lastname').val();
