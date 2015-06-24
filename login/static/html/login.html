@@ -9,38 +9,40 @@
             </tr>
             <tr>
                 <td><label for="lastname">Lastname:</label></td>
-                <td><input id="lastname" name="lastname" placeholder="John" type="text" value="{last_name}"/></td>
+                <td><input id="lastname" name="lastname" placeholder="Doe" type="text" value="{last_name}"/></td>
             </tr>
             <tr>
                 <td><label for="firstname">Firstname:</label></td>
-                <td><input id="firstname" name="firstname" placeholder="Doe" type="text" value="{first_name}"/></td>
+                <td><input id="firstname" name="firstname" placeholder="John" type="text" value="{first_name}"/></td>
             </tr>
         </table>
+
         <table>
-            <tr>
-                <td><input id="autologin" name="autologin" type="checkbox"/>
-                    Do you have an account with ProctorU?
-                </td>
+	    <tr>
+                <td>
+			<input id="autologin" name="autologin" type="radio"/>
+                	Click here if you already have an account with ProctorU
+		</td>
             </tr>
-            <tr>
-                <td><input id="createStudent" name="createStudent" type="checkbox"/>
-                    If not, do you want to register with ProctorU with your FUN account information?
-                </td>
+	    <tr>
+                <td>
+			<input id="createStudent" name="autologin" type="radio" checked="checked"/>
+                	Click here to register with ProctorU with your FUN account information
+		</td>
             </tr>
             <tr>
                 <td>
-                    <em>* If you don't register with ProctorU, you can't take an exam</em>
-                </td>
+			<em>* If you don't register with ProctorU, you can't take an exam</em>
+		</td>
             </tr>
         </table>
+
         <input id="reset" name="reset" type="button" value="Reset"/>
         <input id="submit" name="submit" type="button" value="Submit"/>
 
-
-        <div id="autoLogin_result">{self.create_result}</div>
-        <div id="create_result">{self.autoLogin_result}</div>
+        <div id="autoLogin_result"></div>
+        <div id="create_result"></div>
         <div id="autoLogin_url"><a id="url"></a></div>
-
 
     </form>
 </div>

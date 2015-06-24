@@ -1,4 +1,5 @@
-"""TO-DO: Write a description of what this XBlock is."""
+"""Login xblock speeding up proctoru registration process using EDX information"""
+"""Copyright Yuhao Zhao, Yuqing Wei, Olivier Paul"""
 
 import pkg_resources
 import urllib
@@ -13,42 +14,12 @@ from xblock.fragment import Fragment
 
 
 class LoginXBlock(XBlock):
-    """
-    TO-DO: document what your XBlock does.
-    """
 
     # Fields are defined on the class.  You can access them in your code as
     # self.<fieldname>.
 
-    # TO-DO: delete count, and define your own fields.
-    create_result = Integer(default="", scope=Scope.user_state,
-                            help="the response code of creating account", )
-    autoLogin_result = Integer(default="", scope=Scope.user_state,
-                               help="the response code of autologin", )
-    mailExist_result = Integer(default="", scope=Scope.user_state,
-                               help="the response code of mail exist", )
-    autoLogin_url = String(default="", scope=Scope.user_state,
-                           help="the url for going ProctorU", )
-
     authorization = String(help="Authorization Token", default="",
                            scope=Scope.content)
-
-    autoLogChecked = Boolean(default=False, scope=Scope.user_state, )
-    createStudentChecked = Boolean(default=False, scope=Scope.user_state, )
-
-    time_send = String(default="", scope=Scope.user_state, help="the time of sending", )
-    student_id = String(default="", scope=Scope.user_state, help="the student's id, usually is E-mail", )
-    last_name = String(default="", scope=Scope.user_state, help="student's last name", )
-    first_name = String(default="", scope=Scope.user_state, help="student's first name", )
-    adress1 = String(default="", scope=Scope.user_state, help="student's address", )
-    adress2 = String(default="", scope=Scope.user_state, help="student's supplement address", )
-    city = String(default="", scope=Scope.user_state, help="student's city", )
-    state = String(default="", scope=Scope.user_state, help="student's state", )
-    country = String(default="", scope=Scope.user_state, help="student's country", )
-    zipcode = String(default="", scope=Scope.user_state, help="student's zipcode", )
-    phone1 = String(default="", scope=Scope.user_state, help="student's phone number", )
-    email = String(default="", scope=Scope.user_state, help="student's e-mail", )
-    time_zone_id = String(default="Central Standard Time", scope=Scope.user_state, help="student's time zone", )
 
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
@@ -64,14 +35,14 @@ class LoginXBlock(XBlock):
         html = self.resource_string("static/html/login.html")
         if self.runtime.get_real_user is not None:
             try:
-                self.student_id = self.runtime.get_real_user(self.runtime.anonymous_student_id).email
-                self.first_name = self.runtime.get_real_user(self.runtime.anonymous_student_id).username
-                self.last_name = self.runtime.get_real_user(self.runtime.anonymous_student_id).username
-                frag = Fragment(unicode(html).format(self=self, student_id=self.student_id,
-                                                     first_name=self.first_name,
-                                                     last_name=self.last_name))
+                student_id = self.runtime.get_real_user(self.runtime.anonymous_student_id).email
+                first_name = self.runtime.get_real_user(self.runtime.anonymous_student_id).username
+                last_name = self.runtime.get_real_user(self.runtime.anonymous_student_id).username
+                frag = Fragment(unicode(html).format(self=self, student_id=student_id,
+                                                     first_name=first_name,
+                                                     last_name=last_name))
             except Exception:  # pylint: disable=broad-except
-                msg = 'Some Errors Occurred for getting information from FUN'
+                msg = 'Some errors occurred while getting information from FUN'
         else:
             frag = Fragment(unicode(html).format(self=self, student_id="",
                                                  first_name="",
@@ -98,9 +69,6 @@ class LoginXBlock(XBlock):
 
         return frag
 
-        # TO-DO: change this handler to perform your own actions.  You may need more
-        # than one handler, or you may not need any handlers at all.
-
     @XBlock.json_handler
     def studio_submit(self, data, suffix=''):
         """
@@ -113,31 +81,26 @@ class LoginXBlock(XBlock):
     @XBlock.json_handler
     def autoLogIn(self, data, suffix=''):
         # based url and required header
-        self.student_id = data.get('student_id')
-        self.last_name = data.get('lastname')
-        self.first_name = data.get('firstname')
-        self.adress1 = ''
-        self.adress2 = ''
-        self.city = ''
-        self.state = ''
-        self.country = ''
-        self.zipcode = ''
-        self.phone1 = ''
-        self.autoLogChecked = data.get('autoLogin')
-        self.createStudentChecked = data.get('createStudent')
+        student_id = data.get('student_id')
+        last_name = data.get('lastname')
+        first_name = data.get('firstname')
+        adress1 = ''
+        adress2 = ''
+        city = ''
+        state = ''
+        country = ''
+        zipcode = ''
+        phone1 = ''
+        autoLogChecked = data.get('autoLogin')
+        createStudentChecked = not(autoLogChecked)
 
-        if (self.student_id == '' or
-                    self.last_name == '' or
-                    self.first_name == ''):
-            return {'create_result': 'Please fill the form',
+        if (student_id == '' or
+                    last_name == '' or
+                    first_name == ''):
+            return {'create_result': 'Please fill the form before submitting',
                     'autoLogin_result': '',
                     'autoLogin_url': ''}
 
-        if (self.autoLogChecked and self.createStudentChecked) \
-                or ((not self.autoLogChecked) and (not self.createStudentChecked)):
-            return {'create_result': 'Please choose one option',
-                    'autoLogin_result': '',
-                    'autoLogin_url': ''}
         # check the student existed
         # based url and required header
         else:
@@ -146,15 +109,17 @@ class LoginXBlock(XBlock):
                               "Authorization-Token": self.authorization, }
             gmt_time = time.gmtime()
             formatGmtTime = time.strftime("%Y-%m-%dT%H:%M:%SZ", gmt_time)
+
             # user login information
             dataSending = urllib.urlencode(
                 {
                     "time_sent": formatGmtTime,
-                    "email": self.student_id
+                    "email": student_id
                 })
 
             # create request object
             request = urllib2.Request(url, dataSending, headersSending)
+
             # do request
             try:
                 result = urllib2.urlopen(request)
@@ -167,57 +132,57 @@ class LoginXBlock(XBlock):
                 if result:
                     the_page = result.read()
                     receive_header = result.info()
+
                     # avoid the messy code
                     the_page = the_page.decode('utf-8', 'replace').encode(sys.getfilesystemencoding())
                     mailExist = json.loads(the_page)
-                    self.mailExist_result = mailExist['data']
+                    mailExist_result = mailExist['data']
                     result.close()
 
-                    if self.mailExist_result != None and self.createStudentChecked:
+                    if mailExist_result != None and createStudentChecked:
                         return {'create_result':
-                                    'Sorry, you have already had the account in ProctorU with '
-                                    + self.student_id + ' from school '
-                                    + self.mailExist_result['schoolname'],
-                                'autoLogin_result': mailExist,
+                                    'Sorry, you already have an account with ProctorU using '
+                                    + student_id + ' from school '
+                                    + mailExist_result['schoolname'],
+                                'autoLogin_result': '',
                                 'autoLogin_url': ''}
 
-                    elif self.mailExist_result == None and self.autoLogChecked:
-                        return {'create_result': mailExist,
+                    elif mailExist_result == None and autoLogChecked:
+                        return {'create_result': '',
                                 'autoLogin_result':
                                     'Sorry, you don\'t have an account with ProctorU',
                                 'autoLogin_url': ''}
 
                     # create the account
-                    elif self.mailExist_result == None and self.createStudentChecked:
-                        # create the account
+                    elif mailExist_result == None and createStudentChecked:
+
                         gmt_time = time.gmtime()
                         formatGmtTime = time.strftime("%Y-%m-%dT%H:%M:%SZ", gmt_time)
                         print (formatGmtTime)
 
                         url = "https://apitest.proctoru.com/editStudent"
-                        headersSending = {"Content-type": "application/x-www-form-urlencoded",
-                                          "Authorization-Token": self.authorization, }
 
                         # user initial login information
                         dataSending = urllib.urlencode(
                             {
                                 "time_sent": formatGmtTime,
-                                "student_id": self.student_id,
-                                "last_name": self.last_name,
-                                "first_name": self.first_name,
-                                "address1": self.adress1,
-                                "address2": self.adress2,
-                                "city": self.city,
-                                "state": self.state,
-                                "country": self.country,
-                                "zipcode": self.zipcode,
-                                "phone1": self.phone1,
-                                "email": self.student_id,
+                                "student_id": student_id,
+                                "last_name": last_name,
+                                "first_name": first_name,
+                                "address1": adress1,
+                                "address2": adress2,
+                                "city": city,
+                                "state": state,
+                                "country": country,
+                                "zipcode": zipcode,
+                                "phone1": phone1,
+                                "email": student_id,
                                 "time_zone_id": "Central Standard Time"
                             })
 
                         # create request object
                         request = urllib2.Request(url, dataSending, headersSending)
+
                         # do request
                         try:
                             result = urllib2.urlopen(request)
@@ -230,84 +195,40 @@ class LoginXBlock(XBlock):
                             if result:
                                 the_page = result.read()
                                 receive_header = result.info()
+
                                 # avoid the messy code
                                 the_page = the_page.decode('utf-8', 'replace').encode(sys.getfilesystemencoding())
                                 createResult = json.loads(the_page)
-                                self.create_result = createResult['response_code']
+                                create_result = createResult['response_code']
                                 result.close()
-                                if self.create_result == 1:
-                                    # auto-login
-                                    # based url and required header
-                                    gmt_time = time.gmtime()
-                                    formatGmtTime = time.strftime("%Y-%m-%dT%H:%M:%SZ", gmt_time)
-                                    url = "https://apitest.proctoru.com/autoLogin"
-                                    headersSending = {"Content-type": "application/x-www-form-urlencoded",
-                                                      "Authorization-Token": self.authorization, }
-                                    # user login information
-                                    dataSending = urllib.urlencode(
-                                        {
-                                            "time_sent": formatGmtTime,
-                                            "student_id": self.student_id,
-                                            "last_name": self.last_name,
-                                            "first_name": self.first_name,
-                                            "email": self.student_id
-                                        })
-
-                                    # create request object
-                                    request = urllib2.Request(url, dataSending, headersSending)
-                                    # do request
-                                    try:
-                                        result = urllib2.urlopen(request)
-                                    except urllib2.URLError as e:
-                                        if hasattr(e, 'code'):
-                                            print ("Error code:", e.code)
-                                        elif hasattr(e, 'reason'):
-                                            print ("Reason:", e.reason)
-                                    finally:
-                                        if result:
-                                            the_page = result.read()
-                                            receive_header = result.info()
-                                            # avoid the messy code
-                                            the_page = the_page.decode('utf-8', 'replace').encode(
-                                                sys.getfilesystemencoding())
-                                            autoLoginResult = json.loads(the_page)
-                                            self.autoLogin_result = autoLoginResult['response_code']
-                                            self.autoLogin_url = autoLoginResult['data']['url']
-                                            # print ("create account successful")
-                                            result.close()
-                                            if self.autoLogin_result == 1:
-                                                return {'create_result':
-                                                            'Success to create the account and Success to log in ProctorU'
-                                                            + ' You can visit ProctorU by clicking:',
-                                                        'autoLogin_result': '',
-                                                        'autoLogin_url': self.autoLogin_url}
-                                            else:
-                                                return {'create_result': 'Success to create the account',
-                                                        'autoLogin_result': autoLoginResult['message'],
-                                                        'autoLogin_url': '', }
-                                else:
+                                if create_result != 1:
                                     return {'create_result': createResult['message'],
                                             'autoLogin_result': '',
                                             'autoLogin_url': ''}
-                                    # print ("create account successful")
-                    elif self.mailExist_result != None and self.autoLogChecked:
+
+		    elif (mailExist_result != None and autoLogChecked):
+				create_result = 0
+
+                    if (mailExist_result != None and autoLogChecked) or \
+		       (mailExist_result == None and createStudentChecked and create_result == 1):
+
                         gmt_time = time.gmtime()
                         formatGmtTime = time.strftime("%Y-%m-%dT%H:%M:%SZ", gmt_time)
                         url = "https://apitest.proctoru.com/autoLogin"
-                        headersSending = {"Content-type": "application/x-www-form-urlencoded",
-                                          "Authorization-Token": self.authorization, }
+
                         # user login information
                         dataSending = urllib.urlencode(
                             {
                                 "time_sent": formatGmtTime,
-                                "student_id": self.student_id,
-                                "last_name": self.last_name,
-                                "first_name": self.first_name,
-                                "email": self.student_id
+                                "student_id": student_id,
+                                "last_name": last_name,
+                                "first_name": first_name,
+                                "email": student_id
                             })
 
                         # create request object
                         request = urllib2.Request(url, dataSending, headersSending)
+
                         # do request
                         try:
                             result = urllib2.urlopen(request)
@@ -320,21 +241,34 @@ class LoginXBlock(XBlock):
                             if result:
                                 the_page = result.read()
                                 receive_header = result.info()
+
                                 # avoid the messy code
                                 the_page = the_page.decode('utf-8', 'replace').encode(
                                     sys.getfilesystemencoding())
                                 autoLoginResult = json.loads(the_page)
-                                self.autoLogin_result = autoLoginResult['response_code']
-                                self.autoLogin_url = autoLoginResult['data']['url']
+                                autoLogin_result = autoLoginResult['response_code']
+                                autoLogin_url = autoLoginResult['data']['url']
                                 # print ("create account successful")
                                 result.close()
-                                if self.autoLogin_result == 1:
-                                    return {
-                                        'create_result': 'Success to log in ProctorU, you can visit the ProctorU by clicking the link below',
-                                        'autoLogin_result': '',
-                                        'autoLogin_url': self.autoLogin_url}
+
+                                if autoLogin_result == 1:
+				    if (create_result == 1):
+                                      return {
+                                            'create_result': 'Account was successfully created',
+                                            'autoLogin_result': 'To visit ProctorU please click the link below',
+                                            'autoLogin_url': autoLogin_url}
+				    else:
+                                        return {
+                                            'create_result': '',
+                                            'autoLogin_result': 'To visit ProctorU please click the link below',
+                                            'autoLogin_url': autoLogin_url}
                                 else:
-                                    return {'autoLogin_result': autoLoginResult['message'],
+				    if (create_result == 1):
+                                        return {'create_result': 'Account was successfully created, however autologin was unsuccessful',
+                                                'autoLogin_result': autoLoginResult['message'],
+                                                'autoLogin_url': '', }
+				    else:
+                                    	return {'autoLogin_result': autoLoginResult['message'],
                                             'create_result': '',
                                             'autoLogin_url': ''}
 
