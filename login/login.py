@@ -12,10 +12,12 @@ from xblock.core import XBlock
 from xblock.fields import Scope, Integer, String, Boolean
 from xblock.fragment import Fragment
 
+auth_token=""
+api_uri="https://apitest.proctoru.com"
 
 class LoginXBlock(XBlock):
 
-    authorization = String(help="Authorization Token", default="",
+    authorization = String(help="Authorization Token", default=auth_token,
                            scope=Scope.content)
 
     def resource_string(self, path):
@@ -100,7 +102,7 @@ class LoginXBlock(XBlock):
         # check the student existed
         # based url and required header
         else:
-            url = "https://apitest.proctoru.com/getEmailExist"
+            url = api_uri+"/getEmailExist"
             headersSending = {"Content-type": "application/x-www-form-urlencoded",
                               "Authorization-Token": self.authorization, }
             gmt_time = time.gmtime()
@@ -156,7 +158,7 @@ class LoginXBlock(XBlock):
                         formatGmtTime = time.strftime("%Y-%m-%dT%H:%M:%SZ", gmt_time)
                         print (formatGmtTime)
 
-                        url = "https://apitest.proctoru.com/editStudent"
+                        url = api_uri+"/editStudent"
 
                         # user initial login information
                         dataSending = urllib.urlencode(
@@ -210,7 +212,7 @@ class LoginXBlock(XBlock):
 
                         gmt_time = time.gmtime()
                         formatGmtTime = time.strftime("%Y-%m-%dT%H:%M:%SZ", gmt_time)
-                        url = "https://apitest.proctoru.com/autoLogin"
+                        url = api_uri+"/autoLogin"
 
                         # user login information
                         dataSending = urllib.urlencode(
@@ -251,12 +253,12 @@ class LoginXBlock(XBlock):
 				    if (create_result == 1):
                                       return {
                                             'create_result': 'Account was successfully created',
-                                            'autoLogin_result': 'To visit ProctorU please click the link below',
+                                            'autoLogin_result': 'To visit ProctorU please click on the link below',
                                             'autoLogin_url': autoLogin_url}
 				    else:
                                         return {
                                             'create_result': '',
-                                            'autoLogin_result': 'To visit ProctorU please click the link below',
+                                            'autoLogin_result': 'To visit ProctorU please click on the link below',
                                             'autoLogin_url': autoLogin_url}
                                 else:
 				    if (create_result == 1):
