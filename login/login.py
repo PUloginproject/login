@@ -1,5 +1,5 @@
 """Login xblock speeding up proctoru registration process using EDX information"""
-"""Copyright Yuhao Zhao, Yuqing Wei, Olivier Paul"""
+"""Copyright Yuhao Zhao, Yuqing Wei, Olivier Paul, Telecom SudParis"""
 
 import pkg_resources
 import urllib
@@ -15,9 +15,6 @@ from xblock.fragment import Fragment
 
 class LoginXBlock(XBlock):
 
-    # Fields are defined on the class.  You can access them in your code as
-    # self.<fieldname>.
-
     authorization = String(help="Authorization Token", default="",
                            scope=Scope.content)
 
@@ -26,7 +23,6 @@ class LoginXBlock(XBlock):
         data = pkg_resources.resource_string(__name__, path)
         return data.decode("utf8")
 
-    # TO-DO: change this view to display your data your own way.
     def student_view(self, context=None):
         """
         The primary view of the LoginXBlock, shown to students
