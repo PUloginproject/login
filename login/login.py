@@ -1,5 +1,5 @@
 """Login xblock speeding up proctoru registration process using EDX information"""
-"""Copyright Yuhao Zhao, Yuqing Wei, Olivier Paul, Telecom SudParis"""
+"""Copyright 2015 Telecom SudParis"""
 
 import pkg_resources
 import urllib
